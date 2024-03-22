@@ -50,7 +50,7 @@ func ReadAll(dataPath string) (Observation, error) {
 
 	observation.StationName = strings.TrimSpace(header[1])
 	observation.StationID = "XXX"
-	observation.Elevation = 0
+	observation.Elevation = ConfigValues.Elevation
 	data = data[2:]
 	observation.Lat, err = strconv.ParseFloat(data[0][0], 64)
 	if err != nil {

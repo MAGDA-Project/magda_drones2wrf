@@ -117,15 +117,15 @@ func ToWRFASCII(obs Observation) string {
 	var thirstLines []string
 	for _, m := range obs.Measures {
 		thirstLine :=
-			dataQCError(num(m.Pressure, 12.3), 1.0) +
-				dataQCError(num(m.WindSpeed, 12.3), 1.0) +
-				dataQCError(num(m.WindDirection, 12.3), 3.0) +
+			dataQCError(num(m.Pressure, 12.3), ConfigValues.PressureError) +
+				dataQCError(num(m.WindSpeed, 12.3), ConfigValues.WindSpeedError) +
+				dataQCError(num(m.WindDirection, 12.3), ConfigValues.WindDirectionError) +
 				space(11) +
-				dataQCError(num(m.Altitude, 12.3), 100.00) +
-				dataQCError(num(m.Temperature, 12.3), 1) +
-				dataQCError(num(m.Dewpoint, 12.3), 1.0) +
+				dataQCError(num(m.Altitude, 12.3), ConfigValues.AltitudeError) +
+				dataQCError(num(m.Temperature, 12.3), ConfigValues.TemperatureError) +
+				dataQCError(num(m.Dewpoint, 12.3), ConfigValues.DewpointError) +
 				space(11) +
-				dataQCError(num(m.Humidity, 12.3), 2)
+				dataQCError(num(m.Humidity, 12.3), ConfigValues.HumidityError)
 		thirstLines = append(thirstLines, thirstLine)
 	}
 	return firstLine + "\n" + secondLine + "\n" + strings.Join(thirstLines, "\n")

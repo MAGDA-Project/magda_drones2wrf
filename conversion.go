@@ -9,12 +9,10 @@
 //	INFO_FMT = (A12,1X,A19,1X,A40,1X,I6,3(F12.3,11X),6X,A40)
 //	SRFC_FMT = (F12.3,I4,F7.2,F12.3,I4,F7.3)
 //	EACH_FMT = (3(F12.3,I4,F7.2),11X,3(F12.3,I4,F7.2),11X,3(F12.3,I4,F7.2))
-package magda_ws2wrf
+package magda_drones2wrf
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"strconv"
 	"strings"
 	"time"
@@ -90,38 +88,10 @@ func onlyletters(s string) string {
 	return res
 }
 
-func writeCols(w io.Writer, values []string) {
-	bufw := bufio.NewWriter(w)
-	defer bufw.Flush()
-	for i, v := range values {
-		if i > 0 {
-			bufw.WriteRune(',')
-		}
-		bufw.WriteString(v)
-	}
-	bufw.WriteRune('\n')
-}
-
-// WriteCSVObservation ...
-func WriteCSVObservation(w io.Writer, obs Observation) {
-	writeCols(w, []string{
-		obs.StationID,
-		num(Value(obs.Lat), 12.3),
-		num(Value(obs.Lon), 12.3),
-		num(Value(obs.Elevation), 12.3),
-		obs.ObsTimeUtc.Format(time.RFC3339),
-		num(obs.Metric.Pressure, 12.3),
-		num(obs.Metric.PrecipTotal, 12.3),
-		num(obs.HumidityAvg, 12.3),
-		num(obs.Metric.TempAvg, 12.3),
-		num(obs.Metric.WindspeedAvg, 12.3),
-	})
-}
-
 // ToWRFASCII converts a Observation into a string
 func ToWRFASCII(obs Observation) string {
 	firstLine :=
-		str("FM-12 SYNOP", 12) +
+		str("FM-35 TEMP", 12) +
 			" " +
 			date(obs.ObsTimeUtc) +
 			" " +
@@ -138,22 +108,25 @@ func ToWRFASCII(obs Observation) string {
 			str(onlyletters(obs.StationID), 40)
 
 	surfaceLevelPressure := NaN()
-	precipTotal := NaN() // obs.Metric.PrecipTotal
+	precipTotal := NaN()
 
 	secondLine :=
 		dataQCError(num(surfaceLevelPressure, 12.3), 99.99) +
 			dataQCError3(num(precipTotal, 12.3), 99.99)
 
-	thirstLine :=
-		dataQCError(num( /*obs.Metric.Pressure*/ NaN(), 12.3), 1.0) +
-			dataQCError(num( /*obs.Metric.WindspeedAvg*/ NaN(), 12.3), 1.0) +
-			dataQCError(num( /*obs.WinddirAvg*/ NaN(), 12.3), 3.0) +
-			space(11) +
-			dataQCError(num(Value(obs.Elevation), 12.3), 100.00) +
-			dataQCError(num(obs.Metric.TempAvg, 12.3), 1) +
-			dataQCError(num( /*obs.Metric.DewptAvg*/ NaN(), 12.3), 1.0) +
-			space(11) +
-			dataQCError(num( /*obs.HumidityAvg*/ NaN(), 12.3), 2)
-
-	return firstLine + "\n" + secondLine + "\n" + thirstLine
+	var thirstLines []string
+	for _, m := range obs.Measures {
+		thirstLine :=
+			dataQCError(num(m.Pressure, 12.3), 1.0) +
+				dataQCError(num(m.WindSpeed, 12.3), 1.0) +
+				dataQCError(num(m.WindDirection, 12.3), 3.0) +
+				space(11) +
+				dataQCError(num(m.Altitude, 12.3), 100.00) +
+				dataQCError(num(m.Temperature, 12.3), 1) +
+				dataQCError(num(m.Dewpoint, 12.3), 1.0) +
+				space(11) +
+				dataQCError(num(m.Humidity, 12.3), 2)
+		thirstLines = append(thirstLines, thirstLine)
+	}
+	return firstLine + "\n" + secondLine + "\n" + strings.Join(thirstLines, "\n")
 }

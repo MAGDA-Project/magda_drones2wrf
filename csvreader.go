@@ -1,78 +1,109 @@
-package magda_ws2wrf
+package magda_drones2wrf
 
 import (
 	"encoding/csv"
-	"log"
+	"errors"
+	"io"
 	"os"
 	"strconv"
 	"time"
 )
 
-// CsvReader reads observations from CSV files
-type CsvReader struct{}
+func parseFloat(s string) (Value, error) {
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return NaN(), err
+	}
+	return Value(f), nil
+}
 
-// ReadAll implements ObsReader for CsvReader
-func (r CsvReader) ReadAll(dataPath string, domain Domain, date time.Time) ([]Observation, error) {
-	observations := []Observation{}
+func ReadAll(dataPath string) (Observation, error) {
+	observation := Observation{}
 
 	obsF, err := os.Open(dataPath)
 	if err != nil {
-		return nil, err
+		return observation, err
 	}
 	defer obsF.Close()
 	csvReader := csv.NewReader(obsF)
-	data, err := csvReader.ReadAll()
+	csvReader.Comma = ';'
+	var data [][]string
+	for {
+		record, err := csvReader.Read()
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil && errors.Unwrap(err) != csv.ErrFieldCount {
+			return observation, err
+		}
+		data = append(data, record)
+	}
+
+	header := data[0]
+	obsTime, err := time.Parse("2006-01-02 15:04:05", header[0][0:19])
 	if err != nil {
-		log.Fatal(err)
+		return observation, err
+	}
+	observation.ObsTimeUtc = obsTime
+
+	observation.StationName = header[1]
+	observation.StationID = "XXX"
+	observation.Elevation = 0
+	data = data[2:]
+	observation.Lat, err = strconv.ParseFloat(data[0][0], 64)
+	if err != nil {
+		return observation, err
+	}
+	observation.Lon, err = strconv.ParseFloat(data[0][1], 64)
+	if err != nil {
+		return observation, err
 	}
 
-	const ID = 0
-	const DATE = 1
-	const TEMP = 2
-	const NAME = 3
-	const LON = 4
-	const LAT = 5
-	for _, row := range data[1:] {
-		var obs Observation
+	const ALTITUDE = 2
+	const TEMPERATURE = 3
+	const DEW_POINT = 4
+	const HUMIDITY = 5
+	const PRESSURE = 6
+	const WIND_SPEED = 7
+	const WIND_DIRECTION = 8
+
+	observation.Measures = make([]Measure, len(data))
+	for i, row := range data {
+		var m Measure
 		var err error
-		if row[LAT] == "NA" {
-			continue
-		}
-		obs.Lat, err = strconv.ParseFloat(row[LAT], 64)
+		m.Temperature, err = parseFloat(row[TEMPERATURE])
 		if err != nil {
-			return nil, err
+			return observation, err
 		}
-		obs.Lon, err = strconv.ParseFloat(row[LON], 64)
+		m.Dewpoint, err = parseFloat(row[DEW_POINT])
 		if err != nil {
-			return nil, err
+			return observation, err
 		}
-
-		obs.ObsTimeUtc, err = time.Parse("2006-01-02 15:04:05", row[DATE])
+		m.WindSpeed, err = parseFloat(row[WIND_SPEED])
 		if err != nil {
-			return nil, err
+			return observation, err
 		}
-
-		if obs.Lat <= domain.MaxLat && obs.Lat >= domain.MinLat &&
-			obs.Lon <= domain.MaxLon && obs.Lon >= domain.MinLon &&
-			(obs.ObsTimeUtc.Sub(date).Abs().Minutes() <= 15 || date.IsZero()) {
-
-			obs.StationID = row[ID]
-			//obs.Elevation = elevations.GetFromCoord(obs.Lat, obs.Lon)
-			obs.StationName = row[NAME]
-			temp, err := strconv.ParseFloat(row[TEMP], 64)
-			if err != nil {
-				return nil, err
-			}
-			obs.Metric.TempAvg = Value(temp)
-
-			//obs.Metric.Pressure = Value((obs.Metric.PressureMax + obs.Metric.PressureMin) / 2)
-
-			// convert temperatures from °celsius to °kelvin
-			obs.Metric.TempAvg += 273.15
-
-			observations = append(observations, obs)
+		m.WindDirection, err = parseFloat(row[WIND_DIRECTION])
+		if err != nil {
+			return observation, err
 		}
+		m.Pressure, err = parseFloat(row[PRESSURE])
+		if err != nil {
+			return observation, err
+		}
+		m.Precipitation = NaN()
+		m.Humidity, err = parseFloat(row[HUMIDITY])
+		if err != nil {
+			return observation, err
+		}
+		m.Altitude, err = parseFloat(row[ALTITUDE])
+		if err != nil {
+			return observation, err
+		}
+		observation.Measures[i] = m
+
 	}
 
-	return observations, nil
+	return observation, nil
 }

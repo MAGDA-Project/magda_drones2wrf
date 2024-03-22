@@ -5,20 +5,11 @@
 // Look at InputFormat for the various input format
 // supported.
 // Conversion can be done using Convert function.
-package magda_ws2wrf
+package magda_drones2wrf
 
 import (
-	"fmt"
 	"os"
-	"strings"
-	"time"
 )
-
-// NewReader returns a ObsReader that
-// read observations stored in this format.
-func NewReader() ObsReader {
-	return nil
-}
 
 // Convert converts a set of observations, saved in
 // format, contained in inputpath directory or file,
@@ -27,31 +18,21 @@ func NewReader() ObsReader {
 // within 15 minutes from date.
 // Converted file is saved to outputpath, replacing existing file
 // if any, and using os.FileMode(0644) if the file has to be created.
-func Convert(inputFiles []string, domain Domain, date time.Time, outputpath string) error {
+func Convert(inputpath string, outputpath string) error {
 
-	var results []string
-	for _, inputpath := range inputFiles {
-		sensorsObservations, err := NewReader().ReadAll(inputpath, domain, date)
-		if err != nil {
-			return err
-		}
-
-		for _, result := range sensorsObservations {
-			result := ToWRFASCII(result)
-			results = append(results, result)
-		}
+	sensorsObservations, err := ReadAll(inputpath)
+	if err != nil {
+		return err
 	}
 
-	resultsS := strings.Join(results, "\n")
+	result := ToWRFASCII(sensorsObservations)
 
-	header := fmt.Sprintf(headerFormat, len(results), len(results))
-
-	return os.WriteFile(outputpath, []byte(header+resultsS), os.FileMode(0644))
+	return os.WriteFile(outputpath, []byte(headerFormat+result), os.FileMode(0644))
 
 }
 
-var headerFormat = "TOTAL = %6d, MISS. =-888888.,\n" +
-	"SYNOP = %6d, METAR =      0, SHIP  =      0, BUOY  =      0, BOGUS =      0, TEMP  =      0,\n" +
+var headerFormat = "TOTAL = 1, MISS. =-888888.,\n" +
+	"SYNOP = 0, METAR =      0, SHIP  =      0, BUOY  =      0, BOGUS =      0, TEMP  =      1,\n" +
 	"AMDAR =      0, AIREP =      0, TAMDAR=      0, PILOT =      0, SATEM =      0, SATOB =      0,\n" +
 	"GPSPW =      0, GPSZD =      0, GPSRF =      0, GPSEP =      0, SSMT1 =      0, SSMT2 =      0,\n" +
 	"TOVS  =      0, QSCAT =      0, PROFL =      0, AIRSR =      0, OTHER =      0,\n" +

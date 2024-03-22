@@ -1,4 +1,4 @@
-package magda_ws2wrf
+package magda_drones2wrf
 
 import (
 	"math"

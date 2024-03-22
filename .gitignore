@@ -39,3 +39,4 @@
 go.work
 dr2w
 !cli/dr2w
+fixtures/ob.ascii*

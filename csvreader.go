@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -47,7 +48,7 @@ func ReadAll(dataPath string) (Observation, error) {
 	}
 	observation.ObsTimeUtc = obsTime
 
-	observation.StationName = header[1]
+	observation.StationName = strings.TrimSpace(header[1])
 	observation.StationID = "XXX"
 	observation.Elevation = 0
 	data = data[2:]

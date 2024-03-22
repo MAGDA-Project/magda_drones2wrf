@@ -16,7 +16,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 )
 
 // qc is
@@ -77,15 +76,16 @@ func dataQCError3(data string, err float64) string {
 }
 
 func onlyletters(s string) string {
-	res := ""
+	/*res := ""
 	for _, rune := range s {
 		if unicode.IsLetter(rune) && rune < unicode.MaxASCII {
 			res += string(rune)
 		} else {
-			res += string('X')
+			res += string(' ')
 		}
 	}
-	return res
+	*/
+	return s
 }
 
 // ToWRFASCII converts a Observation into a string

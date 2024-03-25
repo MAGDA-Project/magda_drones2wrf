@@ -20,7 +20,7 @@ Usage of `dr2w`:
 Usage: dr2w [options] <inputfile> <outputfile>
 Options:
   -c string
-        config file to use (default "/home/parroit/.magda_drones2wrf.yaml")
+        config file to use (default "~/.magda_drones2wrf.yaml")
 
 ```
 

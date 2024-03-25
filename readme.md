@@ -24,5 +24,5 @@ Options:
 
 ```
 
-* <input file> is the path of the dataset source in csv format. You can see an example of the format [here](magda_drones2wrf/fixtures/source.csv)
+* <input file> is the path of the dataset source in csv format. You can see an example of the format [here](fixtures/source.csv)
 * <output file> is the path of WRF ascii file to create.

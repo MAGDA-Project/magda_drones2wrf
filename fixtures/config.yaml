@@ -1,8 +1,8 @@
-Elevation: 1234.0
-PressureError: 1.0
-WindSpeedError: 1.0
-WindDirectionError: 3.0
-AltitudeError: 100.00
-TemperatureError: 1.0
-DewpointError: 1.0
-HumidityError: 2.0
+Elevation: 1.0
+PressureError: 2.0
+WindSpeedError: 3.0
+WindDirectionError: 4.0
+AltitudeError: 5.0
+TemperatureError: 6.0
+DewpointError: 7.0
+HumidityError: 8.0

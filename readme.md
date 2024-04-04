@@ -1,6 +1,5 @@
 # MAGDA Drones observations to WRF
 
-
 This module can be used to convert drones observations in MAGDA format into ascii
 WRF format.
 
@@ -24,5 +23,6 @@ Options:
 
 ```
 
-* <input file> is the path of the dataset source in csv format. You can see an example of the format [here](fixtures/source.csv)
+* <input file> is the path of the dataset source in csv format. You can see an example of the format [here](fixtures/source2.csv)
 * <output file> is the path of WRF ascii file to create.
+* An example of the configuration file is available [here](fixtures/config.yaml) 

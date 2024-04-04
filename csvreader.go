@@ -2,11 +2,9 @@ package magda_drones2wrf
 
 import (
 	"encoding/csv"
-	"errors"
 	"io"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -35,52 +33,53 @@ func ReadAll(dataPath string) (Observation, error) {
 			break
 		}
 
-		if err != nil && errors.Unwrap(err) != csv.ErrFieldCount {
+		if err != nil {
 			return observation, err
 		}
 		data = append(data, record)
 	}
 
-	header := data[0]
-	obsTime, err := time.Parse("2006-01-02 15:04:05", header[0][0:19])
+	const PRESSURE = 3
+	const ALTITUDE = 4
+	const TEMPERATURE = 5
+	const HUMIDITY = 6
+	const WIND_SPEED = 7
+	const WIND_DIRECTION = 8
+
+	const HEAD_DATE = 0
+	const HEAD_LAT = 1
+	const HEAD_LON = 2
+
+	header := data[1]
+	obsTime, err := time.Parse("2006-01-02 15:04", header[HEAD_DATE])
 	if err != nil {
 		return observation, err
 	}
 	observation.ObsTimeUtc = obsTime
 
-	observation.StationName = strings.TrimSpace(header[1])
+	observation.StationName = "XXX"
 	observation.StationID = "XXX"
 	observation.Elevation = ConfigValues.Elevation
-	data = data[2:]
-	observation.Lat, err = strconv.ParseFloat(data[0][0], 64)
+	data = data[1:]
+	observation.Lat, err = strconv.ParseFloat(header[HEAD_LAT], 64)
 	if err != nil {
 		return observation, err
 	}
-	observation.Lon, err = strconv.ParseFloat(data[0][1], 64)
+	observation.Lon, err = strconv.ParseFloat(header[HEAD_LON], 64)
 	if err != nil {
 		return observation, err
 	}
-
-	const ALTITUDE = 2
-	const TEMPERATURE = 3
-	const DEW_POINT = 4
-	const HUMIDITY = 5
-	const PRESSURE = 6
-	const WIND_SPEED = 7
-	const WIND_DIRECTION = 8
 
 	observation.Measures = make([]Measure, len(data))
 	for i, row := range data {
 		var m Measure
 		var err error
+		m.Dewpoint = NaN()
 		m.Temperature, err = parseFloat(row[TEMPERATURE])
 		if err != nil {
 			return observation, err
 		}
-		m.Dewpoint, err = parseFloat(row[DEW_POINT])
-		if err != nil {
-			return observation, err
-		}
+
 		m.WindSpeed, err = parseFloat(row[WIND_SPEED])
 		if err != nil {
 			return observation, err

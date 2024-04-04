@@ -25,7 +25,7 @@ func main() {
 	flag.StringVar(&configFile, "c", path.Join(home, ".magda_drones2wrf.yaml"), "config file to use")
 	flag.Parse()
 
-	if len(flag.Args()) < 3 {
+	if len(flag.Args()) < 2 {
 		flag.Usage()
 		os.Exit(1)
 	}

@@ -1,6 +1,7 @@
 package magda_drones2wrf
 
 import (
+  "fmt"
 	"encoding/csv"
 	"io"
 	"os"
@@ -27,6 +28,7 @@ func ReadAll(dataPath string) (Observation, error) {
 	csvReader := csv.NewReader(obsF)
 	csvReader.Comma = ';'
 	var data [][]string
+  k := 0
 	for {
 		record, err := csvReader.Read()
 		if err == io.EOF {
@@ -37,7 +39,11 @@ func ReadAll(dataPath string) (Observation, error) {
 			return observation, err
 		}
 		data = append(data, record)
+    k++
 	}
+  k--
+  observation.NLEV = k
+  fmt.Printf("N. of levels. %d\n", observation.NLEV)
 
 	const PRESSURE = 3
 	const ALTITUDE = 4

@@ -97,7 +97,7 @@ func ToWRFASCII(obs Observation) string {
 			" " +
 			str(onlyletters(obs.StationName), 40) +
 			" " +
-			integer(1, 6) +
+			integer(obs.NLEV, 6) +
 			num(Value(obs.Lat), 12.3) +
 			space(11) +
 			num(Value(obs.Lon), 12.3) +
@@ -117,7 +117,7 @@ func ToWRFASCII(obs Observation) string {
 	var thirstLines []string
 	for _, m := range obs.Measures {
 		thirstLine :=
-			dataQCError(num(m.Pressure, 12.3), ConfigValues.PressureError) +
+			dataQCError(num((m.Pressure *100), 12.3), ConfigValues.PressureError) +
 				dataQCError(num(m.WindSpeed, 12.3), ConfigValues.WindSpeedError) +
 				dataQCError(num(m.WindDirection, 12.3), ConfigValues.WindDirectionError) +
 				space(11) +

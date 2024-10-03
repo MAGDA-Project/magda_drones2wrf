@@ -12,6 +12,7 @@ type Observation struct {
 	StationName string
 	ObsTimeUtc  time.Time
 	Lat, Lon    float64
+  NLEV        int
 
 	Measures []Measure
 }
